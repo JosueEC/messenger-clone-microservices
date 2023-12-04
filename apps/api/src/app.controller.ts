@@ -1,12 +1,33 @@
-import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Controller, Get, Inject } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  /**
+   * En el constructor de nuestro controlador podemos inyectar los
+   * microservicios para hacer uso de ellos, tales como si fueran
+   * un service de nuestra aplicacion. Estos se identifican por el
+   * nombre que le dimos en la configuracion de conexion en el
+   * app.module
+   */
+  constructor(
+    @Inject('AUTH_SERVICE')
+    private authService: ClientProxy,
+  ) {}
 
+  /**
+   * Para enviar una request a un microservicios, solo hay que hacer
+   * uso de la funcion .send(). Esta recibe el comando(cmd) al que se
+   * debe hacer match en el microservicio y como segundo parametro
+   * se envia informacion al mismo.
+   */
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  getUser() {
+    return this.authService.send(
+      {
+        cmd: 'get-user',
+      },
+      {},
+    );
   }
 }
