@@ -3,7 +3,8 @@ services:
   rabbitmq: # Configuracion del servicio de RabbitMQ
     image: rabbitmq:3-management # Definimos la imagen y la version que usaremos
     container_name: rabbitmq # Podemos definir un nombre para el container
-    hostname: rabbitmq # Asi como tambien el hostname del mismo
+    hostname: localhost # Asi como tambien el hostname del mismo
+    # hostname: rabbitmq # Asi como tambien el hostname del mismo
     volumes: # Añadimos un volumen para tener persistencia de los datos de RabbitMQ
       - /var/lib/rabbitmq
     ports: # Mapeamos los puertos necesarios para conectarnos a la aplicacion
@@ -12,52 +13,54 @@ services:
     env_file:
       - .env # Por ultimo especificamos la ruta del archivo .env para que el container pueda acceder a sus variables de entorno
   
-  auth: # Esta definicion de service es para construir el container para el microservicio auth
-    build: # Para la construccion de este servicio usaremos la configuracion de un archivo Dockerfile en lugar de definir la imagen y los demas parametros
-      context: ./ # Es la ruta donde se encuentra nuestro docker-compose.yml
-      dockerfile: ./apps/auth/Dockerfile # Y asi mismo esta es la ruta donde se encuentra el Dockerfile a partir del cual vamos a construir el container del servicio
-    env_file:
-      - .env # Igualmente le pasamos la ruta del archivo .env para las variables de entorno
-    depends_on: # Y podemos definir si este servicio dependo de que otros esten levantados primero para que este pueda ser construido
-      - rabbitmq # En esta caso el microservicio de auth depende del servicio de rabbitmq y postgres
-      - postgres
-    volumes: # Ahora definimos donde y que archivos van a copiarse de la aplicacion original al container de docker
-      - .:/usr/src/app # Esta instruccion es para hacer una copia de los archivos del folder local al folder del container de Docker. Es decir, el '.' significa la ruta para todos los archivos locales ubicados en la raiz. El ':' significa que van a ser copiados a otro sitio, y este sitio es la ruta que va despues de los dos puntos. Esta es la ruta donde se copiaran los archivos dentro del container de Docker. Esto implicaria que cada cambio que ocurra en el directorio raiz local se vera reflejado en la copia del container de Docker.
-      # NOTA: La ruta que se esta bindeando es la misma que esta en el Dockerfile de este servicio, ya que esos archivos son los que queremos copiar solamente
-      - /usr/src/app/node_modules # Caso contrario con la instruccion de arriba, aqui estamos creando una ruta anonima dentro del container de Docker, es decir, que no tiene una referencia de la cual se este copiando(bindeando). Esta ruta es para guardar una copia de la carpeta node_modules, pero, aunque ocurra un cambio en este carpeta en la ruta local, este no necesariamente se vera reflejado en la copia del container de Docker, ya que no lo estamos estableciendo aqui.
-    command: npm run start:dev auth # Por ultimo definimos el comando que sera ejecutado en el CMD del container una vez que se ha construido nuestro container. Este comando es el que levanta el container
+  # auth: # Esta definicion de service es para construir el container para el microservicio auth
+  #   build: # Para la construccion de este servicio usaremos la configuracion de un archivo Dockerfile en lugar de definir la imagen y los demas parametros
+  #     context: ./ # Es la ruta donde se encuentra nuestro docker-compose.yml
+  #     dockerfile: ./apps/auth/Dockerfile # Y asi mismo esta es la ruta donde se encuentra el Dockerfile a partir del cual vamos a construir el container del servicio
+  #   env_file:
+  #     - .env # Igualmente le pasamos la ruta del archivo .env para las variables de entorno
+  #   depends_on: # Y podemos definir si este servicio dependo de que otros esten levantados primero para que este pueda ser construido
+  #     - rabbitmq # En esta caso el microservicio de auth depende del servicio de rabbitmq y postgres
+  #     - postgres
+  #   volumes: # Ahora definimos donde y que archivos van a copiarse de la aplicacion original al container de docker
+  #     - .:/usr/src/app # Esta instruccion es para hacer una copia de los archivos del folder local al folder del container de Docker. Es decir, el '.' significa la ruta para todos los archivos locales ubicados en la raiz. El ':' significa que van a ser copiados a otro sitio, y este sitio es la ruta que va despues de los dos puntos. Esta es la ruta donde se copiaran los archivos dentro del container de Docker. Esto implicaria que cada cambio que ocurra en el directorio raiz local se vera reflejado en la copia del container de Docker.
+  #     # NOTA: La ruta que se esta bindeando es la misma que esta en el Dockerfile de este servicio, ya que esos archivos son los que queremos copiar solamente
+  #     - /usr/src/app/node_modules # Caso contrario con la instruccion de arriba, aqui estamos creando una ruta anonima dentro del container de Docker, es decir, que no tiene una referencia de la cual se este copiando(bindeando). Esta ruta es para guardar una copia de la carpeta node_modules, pero, aunque ocurra un cambio en este carpeta en la ruta local, este no necesariamente se vera reflejado en la copia del container de Docker, ya que no lo estamos estableciendo aqui.
+  #   command: npm run start:dev auth # Por ultimo definimos el comando que sera ejecutado en el CMD del container una vez que se ha construido nuestro container. Este comando es el que levanta el container
 
 # La misma logica aplicada para el servicio anterior es aplicable al servicio de la api-gateway tambien, con la diferencia de que aqui si es necesario exponer un puerto para comunicarnos con la API-GATEWAY. Con los demas microservicios no es necesario ya que estos se comunican a traves de RabbitMQ y no es necesario exponer un puerto al cliente
-  api:
-    build:
-      context: ./
-      dockerfile: ./apps/api/Dockerfile
-    ports:
-      - '4000:5000'
-    env_file:
-      - .env
-    depends_on:
-      - rabbitmq
-      - auth
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
-    command: npm run start:dev api
+  # api:
+  #   build:
+  #     context: ./
+  #     dockerfile: ./apps/api/Dockerfile
+  #   ports:
+  #     - '4000:5000'
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - rabbitmq
+  #     - auth
+  #   volumes:
+  #     - .:/usr/src/app
+  #     - /usr/src/app/node_modules
+  #   command: npm run start:dev api
 
 # Configuracion para el servicio de postgres para la base de datos
   postgres:
     image: postgres
-    env_file:
-      - .env
+    container_name: postgres
     ports:
       - '5433:5432'
-
-# Este servicio es para poder conectarse a la interfaz de pgadmin de postgres
-  postgres_admin:
-    image: dpage/pgadmin4
-    depends_on:
-      - postgres
     env_file:
       - .env
-    ports:
-      - '15433:80'
+    # |||
+
+# Este servicio es para poder conectarse a la interfaz de pgadmin de postgres
+  # postgres_admin:
+  #   image: dpage/pgadmin4
+  #   depends_on:
+  #     - postgres
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - '15433:80'
