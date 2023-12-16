@@ -1,5 +1,6 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { UserEntity } from '../entity/user.entity';
 
 ConfigModule.forRoot({
   envFilePath: '.env',
@@ -24,7 +25,8 @@ export const dataSourceOptions: DataSourceOptions = {
   username: configService.get('POSTGRES_USER'),
   password: configService.get('POSTGRES_PASSWORD'),
   database: configService.get('POSTGRES_DB'),
-  entities: [__dirname + '/../apps/auth/**/**/*.entity{.ts,.js}'],
+  // entities: [__dirname + '/../apps/auth/**/**/*.entity{.ts,.js}'],
+  entities: [UserEntity],
   /**
    * Esta es la ruta donde se almacenaran los archivos de las
    * migraciones.
