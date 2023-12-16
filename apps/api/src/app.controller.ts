@@ -1,6 +1,15 @@
 import { Controller, Get, Inject, Post } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 
+/**
+ * El controlador de la API-GATEWAY es el que se comunica con todos
+ * los microservicios que se han registrado en su modulo, por lo
+ * tanto, aqui se registran todos los endpoints para cada
+ * microservicio.
+ *
+ * PSDT: Investigar si se usa alguna forma de separar estos endpoints
+ * para no saturar el controlador del API-GATEWAY
+ */
 @Controller()
 export class AppController {
   /**
@@ -13,6 +22,8 @@ export class AppController {
   constructor(
     @Inject('AUTH_SERVICE')
     private authService: ClientProxy,
+    @Inject('PRESENCE_SERVICE')
+    private presenceService: ClientProxy,
   ) {}
 
   /**
@@ -36,6 +47,16 @@ export class AppController {
     return this.authService.send(
       {
         cmd: 'get-users',
+      },
+      {},
+    );
+  }
+
+  @Get('presence')
+  async getPresence() {
+    return this.presenceService.send(
+      {
+        cmd: 'get-presence',
       },
       {},
     );
