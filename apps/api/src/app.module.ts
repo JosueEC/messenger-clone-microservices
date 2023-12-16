@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ClientProxyFactory, Transport } from '@nestjs/microservices';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { SharedModule } from '@app/shared';
 
 @Module({
   /**
@@ -15,6 +15,21 @@ import { AppService } from './app.service';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: './.env',
+    }),
+    /**
+     * Podemos crear un modulo, en el cual creamos un metodo static
+     * en la clase, el cual nos permitira registrar los modulos de
+     * microservicios de forma dinamica. Esto vuelve mas legible el
+     * codigo y se satura menos el registro de microservicios en el
+     * modulo de la API-GATEWAY
+     */
+    SharedModule.registerRmq({
+      service: 'AUTH_SERVICE',
+      queue: process.env.RABBITMQ_AUTH_QUEUE,
+    }),
+    SharedModule.registerRmq({
+      service: 'PRESENCE_SERVICE',
+      queue: process.env.RABBITMQ_PRESENCE_QUEUE,
     }),
   ],
   controllers: [AppController],
@@ -30,29 +45,6 @@ import { AppService } from './app.service';
    * cambia la configuracion y ubicacion, debido a que este es el
    * generador/emisor y auth es el consumidor
    */
-  providers: [
-    AppService,
-    {
-      provide: 'AUTH_SERVICE',
-      useFactory: (configService: ConfigService) => {
-        const USER = configService.get('RABBITMQ_USER');
-        const PASSWORD = configService.get('RABBITMQ_PASS');
-        const HOST = configService.get('RABBITMQ_HOST');
-        const QUEUE = configService.get('RABBITMQ_AUTH_QUEUE');
-
-        return ClientProxyFactory.create({
-          transport: Transport.RMQ,
-          options: {
-            urls: [`amqp://${USER}:${PASSWORD}@${HOST}`],
-            queue: QUEUE,
-            queueOptions: {
-              durable: true,
-            },
-          },
-        });
-      },
-      inject: [ConfigService],
-    },
-  ],
+  providers: [AppService],
 })
 export class AppModule {}
