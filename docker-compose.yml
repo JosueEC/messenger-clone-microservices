@@ -28,6 +28,20 @@ services:
   #     - /usr/src/app/node_modules # Caso contrario con la instruccion de arriba, aqui estamos creando una ruta anonima dentro del container de Docker, es decir, que no tiene una referencia de la cual se este copiando(bindeando). Esta ruta es para guardar una copia de la carpeta node_modules, pero, aunque ocurra un cambio en este carpeta en la ruta local, este no necesariamente se vera reflejado en la copia del container de Docker, ya que no lo estamos estableciendo aqui.
   #   command: npm run start:dev auth # Por ultimo definimos el comando que sera ejecutado en el CMD del container una vez que se ha construido nuestro container. Este comando es el que levanta el container
 
+  # presence:
+  #   build:
+  #     context: ./
+  #     dockerfile: ./apps/presence/Dockerfile
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - rabbitmq
+  #     - postgres
+  #   volumes:
+  #     - .:/usr/src/app
+  #     - /usr/src/app/node_modules
+  #   command: npm run start:dev presence
+
 # La misma logica aplicada para el servicio anterior es aplicable al servicio de la api-gateway tambien, con la diferencia de que aqui si es necesario exponer un puerto para comunicarnos con la API-GATEWAY. Con los demas microservicios no es necesario ya que estos se comunican a traves de RabbitMQ y no es necesario exponer un puerto al cliente
   # api:
   #   build:
@@ -40,13 +54,14 @@ services:
   #   depends_on:
   #     - rabbitmq
   #     - auth
+  #     - presence
   #   volumes:
   #     - .:/usr/src/app
   #     - /usr/src/app/node_modules
   #   command: npm run start:dev api
 
+
 # Configuracion para el servicio de postgres para la base de datos
-# NOTA: Encontrar el problema de porque ya no logre conectarme al servicio del contenedor
   postgresdb:
     image: postgres:15.4
     container_name: postgresdb
@@ -55,7 +70,11 @@ services:
     env_file:
       - .env
     volumes:
-      - ./db/data:/var/lib/postgresql/data # Esta es la ruta por defecto en la que podemos bindear volumenes para una base de datos, en este caso, la de postgres
+      - ./db/data:/var/lib/postgresql/data
+      # Esta es la ruta por defecto en la que podemos bindear
+      # volumenes para una base de datos, en este caso, la de
+      # postgres. En si, dentro de la ruta var/lib podemos bindear
+      # carpetas para cualquier tipo de libreria.
 
 # Este servicio es para poder conectarse a la interfaz de pgadmin de postgres
   # postgres_admin:
