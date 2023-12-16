@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
-// import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { dataSourceOptions } from './db/data-source';
+// import { dataSourceOptions } from './db/data-source';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UserEntity } from './entity/user.entity';
+import { SharedModule } from '@app/shared';
+import { PostgresDBModule } from '@app/shared/modules/postgresdb.module';
 
 @Module({
   imports: [
@@ -13,40 +14,24 @@ import { UserEntity } from './entity/user.entity';
       isGlobal: true,
       envFilePath: './.env',
     }),
-    TypeOrmModule.forRoot(dataSourceOptions),
+    SharedModule,
+    PostgresDBModule,
+    /**
+     * Al crear el modulo PostgresDBModule lo que hacemos es separar
+     * la logica de conexion con la base de datos de postgres, ya que
+     * esta sera la misma para varios de los microservicios y todos
+     * comparten las mismas dataSourceOptions.
+     *
+     * Por lo tanto, ahora solo basta con importar el PostgresDBModule
+     * para obtener la conexion del microservicio con la base de datos
+     * de postgres.
+     *
+     * A diferencia de que en un monolito basta con tener este codigo
+     * de conexion en el .module principal, ya que solo habra una
+     * conexion con la base de datos
+     */
+    // TypeOrmModule.forRoot(dataSourceOptions),
     TypeOrmModule.forFeature([UserEntity]),
-    // TypeOrmModule.forRootAsync({
-    //   imports: [ConfigModule],
-    //   // useFactory: (configService: ConfigService) => ({
-    //   //   type: 'postgres',
-    //   //   url: configService.get('POSTGRES_URI'),
-    //   //   /**
-    //   //    * autoLoadEntities busca de manera automatica las clases
-    //   //    * marcadas con la anotacion @Entity, de esta forma no es
-    //   //    * necesario añadirlas de forma manual con la funcion
-    //   //    * .forFeature() de TypeOrmModule
-    //   //    */
-    //   //   autoLoadEntities: true,
-    //   //   /**
-    //   //    * Synchronize sincroniza los cambios en las entidades
-    //   //    * definidas con codigo y las creadas en la base de datos,
-    //   //    * esto significa que cuando ocurra un cambio en la entidad,
-    //   //    * esta se eliminar para crear la nueva.
-    //   //    *
-    //   //    * Dado lo anterior, esta opcion solo debe usarse en el
-    //   //    * ambiente de desarrollo, en produccion se usan migraciones
-    //   //    * para modificar entidades, ya que con estas no tenemos
-    //   //    * perdidas de informacion.
-    //   //    */
-    //   //   synchronize: true,
-    //   // }),
-    //   useFactory: () => ({
-    //     ...dataSourceOptions,
-    //     autoLoadEntities: true,
-    //   }),
-    //   inject: [ConfigService],
-    // }),
-    // TypeOrmModule.forFeature([UserEntity]),
   ],
   controllers: [AuthController],
   providers: [AuthService],
