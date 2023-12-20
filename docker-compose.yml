@@ -1,3 +1,5 @@
+# Toda una arquitectura de microservicios puede ser definida y levantada a traves
+# del docker-compose en conjunto con los Dockerfiles.
 version: '3.1'
 services:
   rabbitmq: # Configuracion del servicio de RabbitMQ
