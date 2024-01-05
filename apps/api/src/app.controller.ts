@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 
 /**
@@ -33,7 +33,7 @@ export class AppController {
    * se envia informacion al mismo.
    */
   @Post('auth')
-  async postUser() {
+  public async postUser() {
     return this.authService.send(
       {
         cmd: 'post-user',
@@ -43,7 +43,7 @@ export class AppController {
   }
 
   @Get('auth')
-  async getUsers() {
+  public async getUsers() {
     return this.authService.send(
       {
         cmd: 'get-users',
@@ -53,12 +53,32 @@ export class AppController {
   }
 
   @Get('presence')
-  async getPresence() {
+  public async getPresence() {
     return this.presenceService.send(
       {
         cmd: 'get-presence',
       },
       {},
+    );
+  }
+
+  @Post('auth/register')
+  public async register(
+    @Body('firstName') firstName: string,
+    @Body('lastName') lastName: string,
+    @Body('email') email: string,
+    @Body('password') password: string,
+  ) {
+    return this.authService.send(
+      {
+        cmd: 'register',
+      },
+      {
+        firstName,
+        lastName,
+        email,
+        password,
+      },
     );
   }
 }
