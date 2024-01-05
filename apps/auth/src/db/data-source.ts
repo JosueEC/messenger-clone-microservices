@@ -25,7 +25,8 @@ export const dataSourceOptions: DataSourceOptions = {
   username: configService.get('POSTGRES_USER'),
   password: configService.get('POSTGRES_PASSWORD'),
   database: configService.get('POSTGRES_DB'),
-  // entities: [__dirname + '/../apps/auth/**/**/*.entity{.ts,.js}'],
+  // TODO: Revisar porque no esta funcionando la carga dinamica
+  // entities: [__dirname + '/api/apps/auth/**/*.entity{.ts,.js}'],
   entities: [UserEntity],
   /**
    * Esta es la ruta donde se almacenaran los archivos de las
@@ -38,7 +39,7 @@ export const dataSourceOptions: DataSourceOptions = {
    * compilador de typescript en lugar de usar webpack
    */
   migrations: ['dist/apps/auth/db/migrations/*{.ts,.js}'],
-  synchronize: false,
+  synchronize: true,
   migrationsRun: true,
   logging: false,
 };
