@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 import {
   MessagePattern,
   Ctx,
@@ -10,6 +10,8 @@ import { UserEntity } from './entity/user.entity';
 import { DeleteResult, UpdateResult } from 'typeorm';
 import { SharedService } from '@app/shared';
 import { NewUserDto } from './dto/new-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
+import { JwtGuard } from './jwt/jwt.guard';
 
 @Controller()
 export class AuthController {
@@ -80,5 +82,24 @@ export class AuthController {
   ): Promise<UserEntity> {
     this.sharedService.acknowledgeMessage(context);
     return this.authService.registerUser(payload);
+  }
+
+  @MessagePattern({ cmd: 'login' })
+  public async loginUser(
+    @Ctx() context: RmqContext,
+    @Payload() payload: LoginUserDto,
+  ) {
+    this.sharedService.acknowledgeMessage(context);
+    return this.authService.loginUser(payload);
+  }
+
+  @MessagePattern({ cmd: 'verify-token' })
+  @UseGuards(JwtGuard)
+  public async verifyToken(
+    @Ctx() context: RmqContext,
+    @Payload() payload: LoginUserDto,
+  ) {
+    this.sharedService.acknowledgeMessage(context);
+    return this.authService.loginUser(payload);
   }
 }
