@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 // import { dataSourceOptions } from './db/data-source';
 import { PostgresDBModule } from '@app/shared';
@@ -7,12 +7,29 @@ import { SharedModule } from '@app/shared';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UserEntity } from './entity/user.entity';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: './.env',
+    }),
+    /**
+     * Esta es la configuracion para el uso de JWT en nuestro modulo.
+     *
+     * Observa que esta es otra forma de configurar modulos, pues esta
+     * la otra, donde creas el dataSource y se lo pasas a la funcion
+     * .forRoot, pero al parecer, para el modulo JwtModule, esta
+     * funcion no existe.
+     */
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get('JWT_SECRET'),
+        signOptions: { expiresIn: '3600s' },
+      }),
+      inject: [ConfigService],
     }),
     SharedModule,
     PostgresDBModule,
