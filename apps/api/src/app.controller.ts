@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Inject, Post } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { Observable } from 'rxjs';
 
 /**
  * El controlador de la API-GATEWAY es el que se comunica con todos
@@ -33,7 +34,7 @@ export class AppController {
    * se envia informacion al mismo.
    */
   @Post('auth')
-  public async postUser() {
+  public async postUser(): Promise<Observable<any>> {
     return this.authService.send(
       {
         cmd: 'post-user',
@@ -43,7 +44,7 @@ export class AppController {
   }
 
   @Get('auth')
-  public async getUsers() {
+  public async getUsers(): Promise<Observable<any>> {
     return this.authService.send(
       {
         cmd: 'get-users',
@@ -53,7 +54,7 @@ export class AppController {
   }
 
   @Get('presence')
-  public async getPresence() {
+  public async getPresence(): Promise<Observable<any>> {
     return this.presenceService.send(
       {
         cmd: 'get-presence',
@@ -68,7 +69,7 @@ export class AppController {
     @Body('lastName') lastName: string,
     @Body('email') email: string,
     @Body('password') password: string,
-  ) {
+  ): Promise<Observable<any>> {
     return this.authService.send(
       {
         cmd: 'register',
@@ -76,6 +77,22 @@ export class AppController {
       {
         firstName,
         lastName,
+        email,
+        password,
+      },
+    );
+  }
+
+  @Post('auth/login')
+  public async login(
+    @Body('email') email: string,
+    @Body('password') password: string,
+  ): Promise<Observable<any>> {
+    return this.authService.send(
+      {
+        cmd: 'login',
+      },
+      {
         email,
         password,
       },
