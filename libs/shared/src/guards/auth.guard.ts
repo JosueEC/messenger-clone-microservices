@@ -1,8 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { Observable } from 'rxjs';
 
 @Injectable()
-export class AuthGuard {
-  public hasJWT() {
-    return { jwt: 'token' };
+export class AuthGuard implements CanActivate {
+  canActivate(
+    context: ExecutionContext,
+  ): boolean | Promise<boolean> | Observable<boolean> {
+    throw new Error('Method not implemented.');
   }
 }
