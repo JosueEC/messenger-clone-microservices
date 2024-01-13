@@ -130,6 +130,29 @@ export class AuthService {
     return { token: jwt };
   }
 
+  /**
+   * Aqui tenemos otra forma de añadir tipado en TypeScript, el
+   * cual es poner directamente el contenido de un objeto.
+   */
+  public async verifyJwt(jwt: string): Promise<{ exp: number }> {
+    if (!jwt) {
+      throw new UnauthorizedException('Token is missing');
+    }
+
+    try {
+      /**
+       * El valor 'exp' es la fecha de expiracion del token
+       * verificado, esto es lo que vamos a devolver al cliente.
+       */
+      const { exp } = await this.jwtService.verifyAsync(jwt);
+      return { exp };
+    } catch (error) {
+      throw new UnauthorizedException(
+        'Something went wrong with the verify token',
+      );
+    }
+  }
+
   public async updateUser(): Promise<UpdateResult> {
     return this.userRepository.update({ id: 1 }, { firstName: 'Josue Cruz' });
   }
