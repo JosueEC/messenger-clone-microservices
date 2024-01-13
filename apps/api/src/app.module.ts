@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { SharedModule } from '@app/shared';
+import { AuthGuard, SharedModule } from '@app/shared';
 
 @Module({
   /**
@@ -16,6 +16,18 @@ import { SharedModule } from '@app/shared';
       isGlobal: true,
       envFilePath: './.env',
     }),
+    /**
+     * En el caso de la API GATEWAY los microservicios deben ser
+     * registrados en el modulo de providers. Estos se pasan como un
+     * objeto, el cual contiene el nombre del microservicio(provider) y
+     * la funcion useFactory, la cual devuelve una conexion con RabbitMQ
+     * en este caso.
+     *
+     * Basicamente es lo mismo que se establecio para conectar el
+     * microservicio de auth en su respectivo archivo main.ts. Solo
+     * cambia la configuracion y ubicacion, debido a que este es el
+     * generador/emisor y auth es el consumidor
+     */
     /**
      * Podemos crear un modulo, en el cual creamos un metodo static
      * en la clase, el cual nos permitira registrar los modulos de
@@ -34,17 +46,10 @@ import { SharedModule } from '@app/shared';
   ],
   controllers: [AppController],
   /**
-   * En el caso de la API GATEWAY los microservicios deben ser
-   * registrados en el modulo de providers. Estos se pasan como un
-   * objeto, el cual contiene el mobre del microservicio(provide) y
-   * la funcion useFactory, la cual devuelve una conexion con RabbitMQ
-   * en este caso.
-   *
-   * Basicamente es lo mismo que se establecio para conectar el
-   * microservicio de auth en su respectivo archivo main.ts. Solo
-   * cambia la configuracion y ubicacion, debido a que este es el
-   * generador/emisor y auth es el consumidor
+   * Dado que haremos uso del AuthGuard en nuestra API GATEWAY para
+   * proteger los diferentes endpoints de los microservicios, entonces
+   * debemos añadir el AuthGuard al modulo de providers.
    */
-  providers: [AppService],
+  providers: [AppService, AuthGuard],
 })
 export class AppModule {}
