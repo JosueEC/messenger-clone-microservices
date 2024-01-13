@@ -2,7 +2,6 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SharedService } from '../shared.service';
 import { ClientProxyFactory, Transport } from '@nestjs/microservices';
-import { AuthGuard } from '../guards/auth.guard';
 
 @Module({
   imports: [
@@ -11,8 +10,8 @@ import { AuthGuard } from '../guards/auth.guard';
       envFilePath: './.env',
     }),
   ],
-  providers: [SharedService, AuthGuard],
-  exports: [SharedService, AuthGuard],
+  providers: [SharedService],
+  exports: [SharedService],
 })
 export class SharedModule {
   /**
