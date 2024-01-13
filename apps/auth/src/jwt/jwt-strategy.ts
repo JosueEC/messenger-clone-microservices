@@ -14,7 +14,7 @@ import { JwtRequest } from './jwt-request';
  * que creamos para JWT donde inyectamos la propiedad jwt
  */
 @Injectable()
-export class JwtStartegy extends PassportStrategy(Strategy) {
+export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
