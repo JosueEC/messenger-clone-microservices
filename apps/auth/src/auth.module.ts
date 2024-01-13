@@ -8,6 +8,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UserEntity } from './entity/user.entity';
 import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from './jwt/jwt-strategy';
 
 @Module({
   imports: [
@@ -50,7 +51,12 @@ import { JwtModule } from '@nestjs/jwt';
     // TypeOrmModule.forRoot(dataSourceOptions),
     TypeOrmModule.forFeature([UserEntity]),
   ],
-  controllers: [AuthController],
+  /**
+   * Cuando usamos PassportJS, es necesario agregar la estrategia de
+   * autenticacion al array de providers del modulo, para que el
+   * mismo tenga conocimiento de la estrategia.
+   */
+  controllers: [AuthController, JwtStrategy],
   providers: [AuthService],
 })
 export class AuthModule {}
