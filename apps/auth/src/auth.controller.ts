@@ -95,11 +95,11 @@ export class AuthController {
 
   @MessagePattern({ cmd: 'verify-token' })
   @UseGuards(JwtGuard)
-  public async verifyToken(
+  public async verifyJwt(
     @Ctx() context: RmqContext,
-    @Payload() payload: LoginUserDto,
+    @Payload() payload: { jwt: string },
   ) {
     this.sharedService.acknowledgeMessage(context);
-    return this.authService.loginUser(payload);
+    return this.authService.verifyJwt(payload.jwt);
   }
 }
