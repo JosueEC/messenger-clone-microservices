@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Inject, Post } from '@nestjs/common';
+import { AuthGuard } from '@app/shared';
+import { Body, Controller, Get, Inject, Post, UseGuards } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Observable } from 'rxjs';
 
@@ -53,6 +54,7 @@ export class AppController {
     );
   }
 
+  @UseGuards(AuthGuard)
   @Get('presence')
   public async getPresence(): Promise<Observable<any>> {
     return this.presenceService.send(
