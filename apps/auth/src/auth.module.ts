@@ -2,13 +2,15 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 // import { dataSourceOptions } from './db/data-source';
-import { PostgresDBModule } from '@app/shared';
+import { PostgresDBModule, SharedService } from '@app/shared';
 import { SharedModule } from '@app/shared';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UserEntity } from './entity/user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt/jwt-strategy';
+import { JwtGuard } from './jwt/jwt.guard';
+import { UsersRepository } from '@app/shared/repositories/users.repository';
 
 @Module({
   imports: [
@@ -51,12 +53,41 @@ import { JwtStrategy } from './jwt/jwt-strategy';
     // TypeOrmModule.forRoot(dataSourceOptions),
     TypeOrmModule.forFeature([UserEntity]),
   ],
+  controllers: [AuthController],
   /**
    * Cuando usamos PassportJS, es necesario agregar la estrategia de
    * autenticacion al array de providers del modulo, para que el
    * mismo tenga conocimiento de la estrategia.
    */
-  controllers: [AuthController, JwtStrategy],
-  providers: [AuthService],
+  /**
+   * Esta es la forma de inyectar las interfaces para el uso de
+   * las mismas dentro de este modulo, es otro forma de inyectar
+   * modulos.
+   *
+   * De esta forma, cuando deseemos injectar al AuthService, por
+   * ejemplo, ahora debemos usar el alias 'AuthServiceInterface'
+   * quedando de la siguiente forma:
+   * * @Inject('AuthServiceInterface')
+   * * private readonly authService: AuthService,
+   *
+   * Hay ejemplos aplicados de esto en el AuthController
+   */
+  providers: [
+    AuthService,
+    JwtGuard,
+    JwtStrategy,
+    {
+      provide: 'AuthServiceInterface',
+      useClass: AuthService,
+    },
+    {
+      provide: 'UsersRepositoryInterface',
+      useClass: UsersRepository,
+    },
+    {
+      provide: 'SharedServiceInterface',
+      useClass: SharedService,
+    },
+  ],
 })
 export class AuthModule {}
