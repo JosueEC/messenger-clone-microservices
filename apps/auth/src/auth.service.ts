@@ -1,15 +1,17 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { DeleteResult, Repository, UpdateResult } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+// import { DeleteResult, UpdateResult } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { UserEntity } from './entity/user.entity';
 import { NewUserDto } from './dto/new-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import * as bcrypt from 'bcrypt';
+import { UserRepositoryInterface } from '@app/shared/interfaces/users.repository.interface';
+import { AuthServiceInterface } from './interfaces/auth.service.interface';
 
 /**
  * Observa que, la libreria de bcrypt se importa como un modulo en
@@ -17,15 +19,34 @@ import * as bcrypt from 'bcrypt';
  * servicio al importar la clase JwtService del modulo jwt
  */
 @Injectable()
-export class AuthService {
+export class AuthService implements AuthServiceInterface {
   constructor(
-    @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
+    /**
+     * Usando el decoradot @InjectRepository y la clase Repository
+     * de typeorm podemos acceder a los metodos para comunicarnos
+     * con la base de datos de esta forma:
+     * * @InjectRepository(UserEntity)
+     * * private readonly userRepository: Repository<UserEntity>,
+     *
+     * Pero, para este caso, estamos implementando el Abstract
+     * Repository, por lo que, la forma de injectar el repository
+     * es diferente.
+     *
+     * Como puedes ver, ahora se usa el decorador @Inject ya que
+     * estamos inyectando la interface UserRepository la cual
+     * implementa el Abstract Repository
+     *
+     * Mencionar que estas interfaces fueron inyectadas en el
+     * auth.module para que el modulo tenga conocimiento de las
+     * mismas.
+     */
+    @Inject('UsersRepositoryInterface')
+    private readonly userRepository: UserRepositoryInterface,
     private readonly jwtService: JwtService,
   ) {}
 
   public async findUsers(): Promise<Array<UserEntity>> {
-    return this.userRepository.find();
+    return this.userRepository.findAll();
   }
 
   /**
@@ -36,7 +57,7 @@ export class AuthService {
    * funcion si nos devuelve la password, ya que esta, sera necesaria.
    */
   public async findByEmail(email: string): Promise<UserEntity> {
-    return this.userRepository.findOne({
+    return this.userRepository.findByCondition({
       where: { email },
       select: ['id', 'firstName', 'lastName', 'email', 'password'],
     });
@@ -153,11 +174,12 @@ export class AuthService {
     }
   }
 
-  public async updateUser(): Promise<UpdateResult> {
-    return this.userRepository.update({ id: 1 }, { firstName: 'Josue Cruz' });
-  }
+  // TODO: Definir los metodos update and delete en el Abstract Repository
+  // public async updateUser(): Promise<UpdateResult> {
+  //   return this.userRepository.update({ id: 1 }, { firstName: 'Josue Cruz' });
+  // }
 
-  public async deleteUser(): Promise<DeleteResult> {
-    return this.userRepository.delete({ id: 1 });
-  }
+  // public async deleteUser(): Promise<UserEntity> {
+  //   return this.userRepository.remove({ id: 1 });
+  // }
 }
