@@ -1,4 +1,4 @@
-import { Controller, UseGuards } from '@nestjs/common';
+import { Controller, Inject, UseGuards } from '@nestjs/common';
 import {
   MessagePattern,
   Ctx,
@@ -7,7 +7,7 @@ import {
 } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
 import { UserEntity } from './entity/user.entity';
-import { DeleteResult, UpdateResult } from 'typeorm';
+// import { DeleteResult, UpdateResult } from 'typeorm';
 import { SharedService } from '@app/shared';
 import { NewUserDto } from './dto/new-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -16,7 +16,9 @@ import { JwtGuard } from './jwt/jwt.guard';
 @Controller()
 export class AuthController {
   constructor(
+    @Inject('AuthServiceInterface')
     private readonly authService: AuthService,
+    @Inject('SharedServiceInterface')
     private readonly sharedService: SharedService,
   ) {}
 
@@ -57,17 +59,17 @@ export class AuthController {
     return this.authService.findUsers();
   }
 
-  @MessagePattern({ cmd: 'update-user' })
-  public async updateUser(@Ctx() context: RmqContext): Promise<UpdateResult> {
-    this.sharedService.acknowledgeMessage(context);
-    return this.authService.updateUser();
-  }
+  // @MessagePattern({ cmd: 'update-user' })
+  // public async updateUser(@Ctx() context: RmqContext): Promise<UpdateResult> {
+  //   this.sharedService.acknowledgeMessage(context);
+  //   return this.authService.updateUser();
+  // }
 
-  @MessagePattern({ cmd: 'delete-user' })
-  public async deleteUser(@Ctx() context: RmqContext): Promise<DeleteResult> {
-    this.sharedService.acknowledgeMessage(context);
-    return this.authService.deleteUser();
-  }
+  // @MessagePattern({ cmd: 'delete-user' })
+  // public async deleteUser(@Ctx() context: RmqContext): Promise<DeleteResult> {
+  //   this.sharedService.acknowledgeMessage(context);
+  //   return this.authService.deleteUser();
+  // }
 
   /**
    * @Payload es eldecorador que nos permite recuperar informacion en
